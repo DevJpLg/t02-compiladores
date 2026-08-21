@@ -1,0 +1,15 @@
+/* LangZ - fonte correto 2: for, tipo real e promocao de int para real. */
+{
+    int mes;
+    real montante;
+    real inicial;
+
+    inicial = 100;          /* promocao implicita: int -> real */
+    montante = inicial;
+
+    for (mes = 1; mes < 11; mes = mes + 1) {
+        montante = montante * 1.1;
+    }
+
+    printf(montante);
+}

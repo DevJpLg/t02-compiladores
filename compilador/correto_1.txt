@@ -1,0 +1,14 @@
+/* LangZ - fonte correto 1: while, if/else, negacao logica e printf. */
+{
+    int i;
+    i = 0;
+
+    while (i < 10) {
+        if (i == 3) {
+            printf(true);
+        } else {
+            printf(!(i == 3));
+        }
+        i = i + 1;
+    }
+}

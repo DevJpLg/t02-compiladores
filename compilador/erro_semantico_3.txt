@@ -1,0 +1,24 @@
+/* LangZ - erro semantico 3: escopo, comparacao e operadores logicos. */
+{
+    int x;
+    x = 10;
+
+    {
+        int y;             /* 'y' e local deste bloco */
+        y = x + 5;
+    }
+
+    y = 20;                /* erro: 'y' nao existe fora do bloco */
+
+    if (x == true) {       /* erro: comparacao entre int e logico */
+        printf(x);
+    }
+
+    while (x) {            /* erro: condicao nao e uma expressao logica */
+        x = x - 1;
+    }
+
+    if (x && true) {       /* erro: '&&' com operando int */
+        printf(x);
+    }
+}

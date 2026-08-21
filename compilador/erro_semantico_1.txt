@@ -1,0 +1,9 @@
+/* LangZ - erro semantico 1: declaracao repetida e uso sem declaracao. */
+{
+    int a;
+    int a;             /* erro: 'a' ja declarado neste escopo */
+
+    b = 10;            /* erro: 'b' nunca foi declarado */
+    a = b + 1;         /* erro: 'b' nunca foi declarado */
+    scanf(c);          /* erro: 'c' nunca foi declarado */
+}

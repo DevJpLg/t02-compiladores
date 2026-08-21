@@ -1,0 +1,12 @@
+/* LangZ - erro semantico 2: incompatibilidade de tipos e operandos invalidos. */
+{
+    int quantidade;
+    real preco;
+    str etiqueta;
+
+    preco = 19.9;
+    quantidade = preco;          /* erro: real atribuido a int */
+    etiqueta = "caixa";
+    quantidade = etiqueta + 1;   /* erro: str em operacao aritmetica */
+    etiqueta = 5;                /* erro: int atribuido a str */
+}

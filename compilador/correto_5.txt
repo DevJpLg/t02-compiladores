@@ -1,0 +1,18 @@
+/* LangZ - fonte correto 5: menos unario e sombreamento de variavel local. */
+{
+    int saldo;
+    real taxa;
+
+    saldo = -250;             /* menos unario sobre um literal */
+    taxa = -0.5;
+
+    if (saldo < 0) {
+        int saldo;            /* local: sombreia a global -> saldo_1 */
+        saldo = 100;
+        printf(saldo);        /* imprime a LOCAL, endereco saldo_1 */
+    }
+
+    printf(saldo);            /* imprime a GLOBAL, que continua -250 */
+    printf(-saldo);           /* menos unario sobre uma variavel */
+    printf(taxa * -2.0);
+}

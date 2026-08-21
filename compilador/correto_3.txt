@@ -1,0 +1,20 @@
+/* LangZ - fonte correto 3: scanf, operadores relacionais e operador logico. */
+{
+    int tentativas;
+    real nota;
+
+    tentativas = 0;
+    nota = 0.0;
+
+    while (tentativas < 3) {
+        scanf(nota);
+
+        if (nota >= 6.0 && tentativas != 2) {
+            printf(true);
+        } else {
+            printf(false);
+        }
+
+        tentativas = tentativas + 1;
+    }
+}

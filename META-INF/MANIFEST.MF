@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.10.5
+Created-By: 11+28-Ubuntu-3ubuntu1 (Oracle Corporation)
+Main-Class: java_cup/Main
+Class-Path: java-cup-0.11b-runtime.jar
+

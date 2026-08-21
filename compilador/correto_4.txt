@@ -1,0 +1,27 @@
+/* LangZ - fonte correto 4: os quatro tipos, escopo local e os demais operadores. */
+{
+    int matricula;
+    real media;
+    real ajuste;
+    str disciplina;
+    chr letra;
+
+    scanf(matricula);
+
+    media = 8.5;
+    letra = 'A';
+    disciplina = "Compiladores";
+    ajuste = (media - 1.0) / 2.0;
+
+    if (media > 7.0 || ajuste <= 3.0) {
+        int aprovado;        /* variavel local deste bloco */
+        aprovado = 1;
+        printf(aprovado);
+    }
+
+    printf(matricula);
+    printf(media);
+    printf(ajuste);
+    printf(letra);
+    printf(disciplina);
+}

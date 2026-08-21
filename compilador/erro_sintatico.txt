@@ -1,0 +1,5 @@
+{
+    real valor
+    valor = 500.00
+    printf(valor);
+}
