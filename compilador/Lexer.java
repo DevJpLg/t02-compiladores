@@ -6,16 +6,6 @@ package compilador;
 
 import java_cup.runtime.Symbol;
 
-/* ============================================================
-   LangZ - ESPECIFICACAO JFLEX (Analisador Lexico)
-   Trabalho P2 - Compiladores
-
-   Mesma especificacao entregue na A1, com uma unica mudanca
-   exigida pela analise semantica: o token NUM foi separado em
-   NUM_INT e NUM_REAL. E essa separacao que permite detectar a
-   atribuicao de um valor real a uma variavel do tipo inteiro.
-   ============================================================ */
-
 
 // See https://github.com/jflex-de/jflex/issues/222
 @SuppressWarnings("FallThrough")
@@ -341,28 +331,13 @@ public class Lexer implements java_cup.runtime.Scanner {
   private boolean zzEOFDone;
 
   /* user code: */
-    /* Quantidade de caracteres invalidos encontrados no fonte.
-
-       O contador existe para que um erro lexico REPROVE a compilacao.
-       Antes dele a mensagem era apenas impressa e o caractere invalido
-       era descartado: se a sequencia de tokens restante ainda fosse
-       valida, o compilador seguia para as fases seguintes e anunciava
-       "nenhum erro lexico", contradizendo a propria mensagem. */
     private int errosLexicos = 0;
-
-    /** Quantos erros lexicos foram encontrados ate aqui. */
     public int errosLexicos() {
         return errosLexicos;
     }
-
-    /* Token sem valor associado. A LINHA vai no campo "left" e a
-       COLUNA no campo "right" do Symbol (ja com base 1), porque o
-       analisador semantico usa os dois para localizar o erro. */
     private Symbol tk(int tipo) {
         return new Symbol(tipo, yyline + 1, yycolumn + 1);
     }
-
-    /* Token que carrega um valor (identificador, numero, literal...). */
     private Symbol tk(int tipo, Object valor) {
         return new Symbol(tipo, yyline + 1, yycolumn + 1, valor);
     }

@@ -2,40 +2,17 @@ package compilador;
 
 import java_cup.runtime.*;
 
-/* ============================================================
-   LangZ - ESPECIFICACAO CUP (Analisador Sintatico)
-   Trabalho P2 - Compiladores
-
-   A gramatica e a mesma entregue na A1. O que foi acrescentado
-   nesta etapa sao as ACOES SEMANTICAS (classe AnalisadorSemantico)
-   e as acoes de GERACAO DE CODIGO (classe GeradorDeCodigo),
-   penduradas nas proprias producoes: a traducao e dirigida pela
-   sintaxe, sem uma passagem extra sobre a arvore.
-   ============================================================ */
-
 parser code {:
 
-    /** Verificacoes semanticas + tabela de simbolos. */
     public AnalisadorSemantico semantico = new AnalisadorSemantico();
-
-    /** Tradutor para o Assembly ficticio da LangZ. */
     public GeradorDeCodigo gerador = new GeradorDeCodigo();
 
-    /** Marca se o fonte tambem apresentou problema de sintaxe. */
     public boolean erroSintatico = false;
 
-    /* Rotulos pendentes dos desvios. Um if ou um while so consegue
-       fechar o proprio rotulo depois de reconhecer o corpo, entao o
-       rotulo fica guardado aqui ate o momento certo. */
     public java.util.Stack<String> pilhaRotulos = new java.util.Stack<String>();
 
-    /* Instrucoes de incremento do comando for. No texto o incremento
-       vem antes do corpo; na execucao ele vem depois. O trecho fica
-       guardado ate ser reemitido na posicao correta. */
     public java.util.Stack<java.util.List<String>> pilhaIncremento =
         new java.util.Stack<java.util.List<String>>();
-
-    /** Converte o operando inteiro quando a operacao resulta em real. */
     public String promover(AtributosExpressao operando, String tipoResultado) {
         if ("real".equals(tipoResultado) && "int".equals(operando.tipo)) {
             String destino = gerador.novoRegistrador();
@@ -44,13 +21,9 @@ parser code {:
         }
         return operando.registrador;
     }
-
-    /** Tipo comum entre dois operandos, usado nas comparacoes. */
     public String tipoComum(AtributosExpressao a, AtributosExpressao b) {
         return ("real".equals(a.tipo) || "real".equals(b.tipo)) ? "real" : "int";
     }
-
-    /** Gera a instrucao de uma comparacao ja com as conversoes necessarias. */
     public AtributosExpressao comparar(String operador, String mnemonico,
                                        AtributosExpressao a, AtributosExpressao b,
                                        int linha, int coluna) {
@@ -60,8 +33,6 @@ parser code {:
         gerador.emitir(mnemonico, destino + ", " + promover(a, comum) + ", " + promover(b, comum));
         return new AtributosExpressao(tipo, destino);
     }
-
-    /** Gera a instrucao de uma operacao aritmetica. */
     public AtributosExpressao calcular(String operador, String mnemonico,
                                        AtributosExpressao a, AtributosExpressao b,
                                        int linha, int coluna) {
@@ -70,8 +41,6 @@ parser code {:
         gerador.emitir(mnemonico, destino + ", " + promover(a, tipo) + ", " + promover(b, tipo));
         return new AtributosExpressao(tipo, destino);
     }
-
-    /** Gera a instrucao de uma operacao logica (&& e ||). */
     public AtributosExpressao combinar(String operador, String mnemonico,
                                        AtributosExpressao a, AtributosExpressao b,
                                        int linha, int coluna) {
@@ -80,8 +49,6 @@ parser code {:
         gerador.emitir(mnemonico, destino + ", " + a.registrador + ", " + b.registrador);
         return new AtributosExpressao(tipo, destino);
     }
-
-    /** Acao comum das duas formas de atribuicao (com e sem ponto e virgula). */
     public void atribuir(String nome, AtributosExpressao valor, int linha, int coluna) {
         String tipoDestino = semantico.usar(nome, linha, coluna);
         semantico.verificarAtribuicao(tipoDestino, valor.tipo, nome, linha, coluna);
@@ -117,10 +84,7 @@ parser code {:
             throw new Exception("Erro fatal [fim do arquivo]: esperava '}' para fechar o bloco");
         }
     }
-
 :};
-
-/* ---------------- TERMINAIS (os mesmos da A1) ---------------- */
 
 terminal IF, ELSE, WHILE, FOR, PRINTF, SCANF;
 terminal T_INT, T_REAL, T_CHR, T_STR;
@@ -130,22 +94,17 @@ terminal EQ, NEQ, LT, GT, LEQ, GEQ;
 terminal AND, OR, NOT;
 terminal LPAR, RPAR, LBRACE, RBRACE, SEMI;
 terminal String  ID;
-terminal Integer NUM_INT;   /* novo na P2: literal inteiro */
-terminal Double  NUM_REAL;  /* novo na P2: literal real    */
+terminal Integer NUM_INT;
+terminal Double  NUM_REAL;
 terminal String  LIT_CHR;
 terminal String  LIT_STR;
-
-/* ---------------- NAO TERMINAIS ---------------- */
 
 non terminal programa;
 non terminal bloco, lista_cmd, cmd;
 non terminal decl, atrib, atrib_inc;
 non terminal String tipo;
 non terminal se_senao, opt_senao, enquanto, para, escrever, ler;
-
-/* expr e termo devolvem o tipo (semantica) e o registrador (codigo) */
 non terminal AtributosExpressao expr, termo;
-
 precedence left OR;
 precedence left AND;
 precedence left EQ, NEQ;
@@ -154,23 +113,13 @@ precedence left PLUS, MINUS;
 precedence left TIMES, DIV;
 precedence right NOT;
 precedence left ELSE;
-
 start with programa;
 
-/* ============================================================
-   PROGRAMA E BLOCOS
-   O primeiro bloco aberto e o escopo GLOBAL; cada bloco interno
-   empilha um escopo LOCAL, descartado ao encontrar o '}'.
-   ============================================================ */
-
 programa ::= bloco {: gerador.emitir("HALT"); :};
-
 bloco    ::= LBRACE {: semantico.abrirEscopo(); :} lista_cmd RBRACE {: semantico.fecharEscopo(); :}
            | LBRACE {: semantico.abrirEscopo(); :} RBRACE           {: semantico.fecharEscopo(); :};
-
 lista_cmd ::= cmd lista_cmd
             | cmd;
-
 cmd       ::= decl
             | atrib
             | se_senao
@@ -180,10 +129,6 @@ cmd       ::= decl
             | ler
             | bloco;
 
-/* ============================================================
-   DECLARACAO -> registra o identificador na tabela de simbolos
-   ============================================================ */
-
 decl ::= tipo:t ID:i SEMI
          {: semantico.declarar(i, t, ileft, iright); :};
 
@@ -191,19 +136,8 @@ tipo ::= T_INT  {: RESULT = "int";  :}
        | T_REAL {: RESULT = "real"; :}
        | T_CHR  {: RESULT = "chr";  :}
        | T_STR  {: RESULT = "str";  :};
-
-/* ============================================================
-   ATRIBUICAO -> checa declaracao e tipos, gera STORE
-   ============================================================ */
-
 atrib     ::= ID:i ATTR expr:e SEMI {: atribuir(i, e, ileft, iright); :};
-
 atrib_inc ::= ID:i ATTR expr:e      {: atribuir(i, e, ileft, iright); :};
-
-/* ============================================================
-   COMANDO if / else
-      JMPF Rc, L0 ... JMP L1 ... L0: ... L1:
-   ============================================================ */
 
 se_senao ::= IF {: gerador.emitirComentario("comando if: avaliacao da condicao"); :}
              LPAR expr:c RPAR
@@ -220,17 +154,12 @@ opt_senao ::= ELSE
               {:
                   String rotuloFalso = pilhaRotulos.pop();
                   String rotuloFim = gerador.novoRotulo();
-                  gerador.emitir("JMP", rotuloFim);   // encerra o caminho verdadeiro
-                  gerador.emitirRotulo(rotuloFalso);  // inicia o caminho falso
+                  gerador.emitir("JMP", rotuloFim);
+                  gerador.emitirRotulo(rotuloFalso);
                   pilhaRotulos.push(rotuloFim);
               :}
               bloco
             | ;
-
-/* ============================================================
-   COMANDO while
-      L0: ... JMPF Rc, L1 ... JMP L0 ... L1:
-   ============================================================ */
 
 enquanto ::= WHILE
              {:
@@ -254,14 +183,6 @@ enquanto ::= WHILE
                  gerador.emitirRotulo(rotuloFim);
              :};
 
-/* ============================================================
-   COMANDO for
-      inicializacao; L0: condicao; JMPF -> L1; corpo; incremento;
-      JMP L0; L1:
-   O incremento e capturado em um buffer para ser reemitido depois
-   do corpo do laco.
-   ============================================================ */
-
 para ::= FOR {: gerador.emitirComentario("comando for: inicializacao"); :}
          LPAR atrib
          {:
@@ -276,24 +197,19 @@ para ::= FOR {: gerador.emitirComentario("comando for: inicializacao"); :}
              String rotuloFim = gerador.novoRotulo();
              gerador.emitir("JMPF", c.registrador + ", " + rotuloFim);
              pilhaRotulos.push(rotuloFim);
-             gerador.iniciarCaptura();   // o incremento vai para o buffer
+             gerador.iniciarCaptura();
          :}
          atrib_inc
          {: pilhaIncremento.push(gerador.encerrarCaptura()); :}
          RPAR bloco
          {:
              gerador.emitirComentario("comando for: incremento");
-             gerador.emitirTrecho(pilhaIncremento.pop()); // incremento apos o corpo
+             gerador.emitirTrecho(pilhaIncremento.pop());
              String rotuloFim = pilhaRotulos.pop();
              String rotuloTeste = pilhaRotulos.pop();
              gerador.emitir("JMP", rotuloTeste);
              gerador.emitirRotulo(rotuloFim);
          :};
-
-/* ============================================================
-   ENTRADA E SAIDA: printf / scanf
-   ============================================================ */
-
 escrever ::= PRINTF LPAR expr:e RPAR SEMI
              {: gerador.emitir("WRITE", e.registrador); :};
 
@@ -302,11 +218,6 @@ ler      ::= SCANF LPAR ID:i RPAR SEMI
                  semantico.usar(i, ileft, iright);
                  gerador.emitir("READ", semantico.rotuloDe(i));
              :};
-
-/* ============================================================
-   EXPRESSOES: verificam operandos e ja emitem a instrucao
-   ============================================================ */
-
 expr ::= expr:a PLUS  expr:b {: RESULT = calcular("+", "ADD", a, b, aleft, aright); :}
        | expr:a MINUS expr:b {: RESULT = calcular("-", "SUB", a, b, aleft, aright); :}
        | expr:a TIMES expr:b {: RESULT = calcular("*", "MUL", a, b, aleft, aright); :}
@@ -335,7 +246,6 @@ expr ::= expr:a PLUS  expr:b {: RESULT = calcular("+", "ADD", a, b, aleft, arigh
              RESULT = new AtributosExpressao(t, destino);
          :}
        | termo:t {: RESULT = t; :};
-
 termo ::= ID:i
           {:
               String t = semantico.usar(i, ileft, iright);

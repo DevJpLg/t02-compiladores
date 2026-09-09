@@ -333,27 +333,15 @@ public class parser extends java_cup.runtime.lr_parser {
 
 
 
-    /** Verificacoes semanticas + tabela de simbolos. */
     public AnalisadorSemantico semantico = new AnalisadorSemantico();
-
-    /** Tradutor para o Assembly ficticio da LangZ. */
     public GeradorDeCodigo gerador = new GeradorDeCodigo();
 
-    /** Marca se o fonte tambem apresentou problema de sintaxe. */
     public boolean erroSintatico = false;
 
-    /* Rotulos pendentes dos desvios. Um if ou um while so consegue
-       fechar o proprio rotulo depois de reconhecer o corpo, entao o
-       rotulo fica guardado aqui ate o momento certo. */
     public java.util.Stack<String> pilhaRotulos = new java.util.Stack<String>();
 
-    /* Instrucoes de incremento do comando for. No texto o incremento
-       vem antes do corpo; na execucao ele vem depois. O trecho fica
-       guardado ate ser reemitido na posicao correta. */
     public java.util.Stack<java.util.List<String>> pilhaIncremento =
         new java.util.Stack<java.util.List<String>>();
-
-    /** Converte o operando inteiro quando a operacao resulta em real. */
     public String promover(AtributosExpressao operando, String tipoResultado) {
         if ("real".equals(tipoResultado) && "int".equals(operando.tipo)) {
             String destino = gerador.novoRegistrador();
@@ -362,13 +350,9 @@ public class parser extends java_cup.runtime.lr_parser {
         }
         return operando.registrador;
     }
-
-    /** Tipo comum entre dois operandos, usado nas comparacoes. */
     public String tipoComum(AtributosExpressao a, AtributosExpressao b) {
         return ("real".equals(a.tipo) || "real".equals(b.tipo)) ? "real" : "int";
     }
-
-    /** Gera a instrucao de uma comparacao ja com as conversoes necessarias. */
     public AtributosExpressao comparar(String operador, String mnemonico,
                                        AtributosExpressao a, AtributosExpressao b,
                                        int linha, int coluna) {
@@ -378,8 +362,6 @@ public class parser extends java_cup.runtime.lr_parser {
         gerador.emitir(mnemonico, destino + ", " + promover(a, comum) + ", " + promover(b, comum));
         return new AtributosExpressao(tipo, destino);
     }
-
-    /** Gera a instrucao de uma operacao aritmetica. */
     public AtributosExpressao calcular(String operador, String mnemonico,
                                        AtributosExpressao a, AtributosExpressao b,
                                        int linha, int coluna) {
@@ -388,8 +370,6 @@ public class parser extends java_cup.runtime.lr_parser {
         gerador.emitir(mnemonico, destino + ", " + promover(a, tipo) + ", " + promover(b, tipo));
         return new AtributosExpressao(tipo, destino);
     }
-
-    /** Gera a instrucao de uma operacao logica (&& e ||). */
     public AtributosExpressao combinar(String operador, String mnemonico,
                                        AtributosExpressao a, AtributosExpressao b,
                                        int linha, int coluna) {
@@ -398,8 +378,6 @@ public class parser extends java_cup.runtime.lr_parser {
         gerador.emitir(mnemonico, destino + ", " + a.registrador + ", " + b.registrador);
         return new AtributosExpressao(tipo, destino);
     }
-
-    /** Acao comum das duas formas de atribuicao (com e sem ponto e virgula). */
     public void atribuir(String nome, AtributosExpressao valor, int linha, int coluna) {
         String tipoDestino = semantico.usar(nome, linha, coluna);
         semantico.verificarAtribuicao(tipoDestino, valor.tipo, nome, linha, coluna);
@@ -435,7 +413,6 @@ public class parser extends java_cup.runtime.lr_parser {
             throw new Exception("Erro fatal [fim do arquivo]: esperava '}' para fechar o bloco");
         }
     }
-
 
 
 /** Cup generated class to encapsulate user supplied action code.*/
@@ -743,8 +720,8 @@ class CUP$parser$actions {
 
                   String rotuloFalso = pilhaRotulos.pop();
                   String rotuloFim = gerador.novoRotulo();
-                  gerador.emitir("JMP", rotuloFim);   // encerra o caminho verdadeiro
-                  gerador.emitirRotulo(rotuloFalso);  // inicia o caminho falso
+                  gerador.emitir("JMP", rotuloFim);
+                  gerador.emitirRotulo(rotuloFalso);
                   pilhaRotulos.push(rotuloFim);
               
               CUP$parser$result = parser.getSymbolFactory().newSymbol("NT$4",20, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -856,7 +833,7 @@ class CUP$parser$actions {
              String rotuloFim = gerador.novoRotulo();
              gerador.emitir("JMPF", c.registrador + ", " + rotuloFim);
              pilhaRotulos.push(rotuloFim);
-             gerador.iniciarCaptura();   // o incremento vai para o buffer
+             gerador.iniciarCaptura();
          
               CUP$parser$result = parser.getSymbolFactory().newSymbol("NT$9",25, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -885,7 +862,7 @@ class CUP$parser$actions {
 		AtributosExpressao c = (AtributosExpressao)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-6)).value;
 		
              gerador.emitirComentario("comando for: incremento");
-             gerador.emitirTrecho(pilhaIncremento.pop()); // incremento apos o corpo
+             gerador.emitirTrecho(pilhaIncremento.pop());
              String rotuloFim = pilhaRotulos.pop();
              String rotuloTeste = pilhaRotulos.pop();
              gerador.emitir("JMP", rotuloTeste);

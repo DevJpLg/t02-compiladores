@@ -6,20 +6,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
 
-/**
- * CLASSE PRINCIPAL DO COMPILADOR DA LINGUAGEM LangZ
- *
- * Executa as quatro fases do compilador sobre cada arquivo-fonte:
- *   1. analise lexica      (Lexer, gerado pelo JFlex)
- *   2. analise sintatica   (parser, gerado pelo CUP)
- *   3. analise semantica   (AnalisadorSemantico + TabelaDeSimbolos)
- *   4. geracao de codigo   (GeradorDeCodigo -> arquivo .asm)
- *
- * Sem argumentos, compila os oito fontes de teste do trabalho.
- * Com argumentos, compila os arquivos informados na linha de comando.
- */
 public class Compilador {
-
     private static final String[] FONTES_DE_TESTE = {
         "correto_1.txt",
         "correto_2.txt",
@@ -33,13 +20,10 @@ public class Compilador {
 
     public static void main(String[] args) {
         String[] alvos = (args.length > 0) ? args : FONTES_DE_TESTE;
-
         System.out.println("=== Linguagem LangZ - Compilador ===");
         System.out.println("Fases: lexica -> sintatica -> semantica -> geracao de codigo");
-
         int compilados = 0;
         int rejeitados = 0;
-
         for (String alvo : alvos) {
             File fonte = localizar(alvo);
             System.out.println();
@@ -51,22 +35,18 @@ public class Compilador {
             }
             System.out.println("FONTE: " + fonte.getName());
             System.out.println("================================================================");
-
             if (compilar(fonte)) {
                 compilados++;
             } else {
                 rejeitados++;
             }
         }
-
         System.out.println();
         System.out.println("================================================================");
         System.out.println("RESUMO: " + compilados + " fonte(s) compilado(s), "
                            + rejeitados + " fonte(s) com erro.");
         System.out.println("================================================================");
     }
-
-    /** Procura o arquivo no diretorio atual e dentro da pasta compilador/. */
     private static File localizar(String nome) {
         File direto = new File(nome);
         if (direto.isFile()) {
@@ -78,8 +58,6 @@ public class Compilador {
         }
         return null;
     }
-
-    /** Roda todas as fases sobre um fonte. Devolve true quando nao ha erro. */
     private static boolean compilar(File fonte) {
         parser sintatico;
         Lexer lexico;
@@ -93,23 +71,16 @@ public class Compilador {
             System.out.println("Compilacao interrompida: " + e.getMessage());
             return false;
         }
-
         AnalisadorSemantico semantico = sintatico.semantico;
         int errosLexicos = lexico.errosLexicos();
-
-        // --- relatorio da tabela de simbolos ---
         System.out.println();
         semantico.tabela().imprimir();
-
-        // --- avisos (conversoes implicitas) ---
         if (!semantico.avisos().isEmpty()) {
             System.out.println();
             for (String aviso : semantico.avisos()) {
                 System.out.println("  " + aviso);
             }
         }
-
-        // --- erros lexicos e semanticos ---
         List<String> erros = semantico.erros();
         if (errosLexicos > 0 || semantico.possuiErros() || sintatico.erroSintatico) {
             System.out.println();
@@ -128,15 +99,12 @@ public class Compilador {
             System.out.println("  Geracao de codigo cancelada para este fonte.");
             return false;
         }
-
-        // --- geracao de codigo ---
         System.out.println();
         System.out.println("  RESULTADO: nenhum erro lexico, sintatico ou semantico.");
         System.out.println();
         System.out.println("  ASSEMBLY FICTICIO GERADO");
         System.out.println("  ------------------------------------------------");
         sintatico.gerador.imprimir();
-
         String destino = fonte.getPath().replaceAll("\\.txt$", "") + ".asm";
         try {
             sintatico.gerador.salvar(destino, fonte.getName());
